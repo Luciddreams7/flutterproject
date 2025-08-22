@@ -1,0 +1,325 @@
+import 'package:flutter/material.dart';
+import 'dart:io'; // Required for exit(0)
+void main() {
+  runApp(const CourseDashboardApp());
+}
+class CourseDashboardApp extends StatelessWidget {
+  const CourseDashboardApp({super.key});
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Course Dashboard',
+      theme: ThemeData(
+        primarySwatch: Colors.teal,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: const MainScreen(),
+    );
+  }
+}
+
+class MainScreen extends StatefulWidget {
+  const MainScreen({super.key});
+
+  @override
+  State<MainScreen> createState() => _MainScreenState();
+}
+
+class _MainScreenState extends State<MainScreen> {
+  int _selectedIndex = 0; // Index for BottomNavigationBar
+
+  // Sample course data
+  final List<Course> _courses = [
+    Course(name: 'Introduction to Flutter', instructor: 'Dr. Dart', icon: Icons.phone_android),
+    Course(name: 'Web Development Basics', instructor: 'Prof. HTML', icon: Icons.web),
+    Course(name: 'Data Structures & Algorithms', instructor: 'Dr. Code', icon: Icons.memory),
+    Course(name: 'Machine Learning Foundations', instructor: 'Prof. AI', icon: Icons.psychology),
+    Course(name: 'Graphic Design Principles', instructor: 'Ms. Pixel', icon: Icons.palette),
+    Course(name: 'Calculus I', instructor: 'Dr. Math', icon: Icons.calculate),
+  ];
+
+  // For Animated Action Button
+  bool _isButtonScaled = false;
+
+  // For Course Selection Dropdown
+  String? _selectedCategory;
+  final List<String> _courseCategories = ['Science', 'Arts', 'Technology', 'Humanities', 'Business'];
+
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  Future<void> _showExitDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // User must tap button
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Confirm Exit'),
+          content: const SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Are you sure you want to exit the app?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('No'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Dismiss the dialog
+              },
+            ),
+            TextButton(
+              child: const Text('Yes'),
+              onPressed: () {
+                Navigator.of(context).pop(); // Dismiss the dialog
+                exit(0); // Exits the application
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    String currentTabName;
+    switch (_selectedIndex) {
+      case 0:
+        currentTabName = 'Home';
+        break;
+      case 1:
+        currentTabName = 'Courses';
+        break;
+      case 2:
+        currentTabName = 'Profile';
+        break;
+      default:
+        currentTabName = 'Home';
+    }
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Course Dashboard - $currentTabName'),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            tooltip: 'Logout',
+            onPressed: _showExitDialog,
+          ),
+        ],
+      ),
+      body: SingleChildScrollView( // Makes the content scrollable
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            // Content based on selected tab (Simplified for this example)
+            // In a real app, _widgetOptions[_selectedIndex] would likely be more complex
+            // or you'd use a PageView.
+            Center(
+              child: Text(
+                'Active Tab: $currentTabName',
+                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // a. Course List View (Displayed on the "Home" tab for this example)
+            if (_selectedIndex == 0) // Show course list only on the Home tab
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Available Courses:',
+                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    height: 300, // Constrain the height of the ListView
+                    child: ListView.builder(
+                      itemCount: _courses.length,
+                      itemBuilder: (context, index) {
+                        final course = _courses[index];
+                        return Card(
+                          margin: const EdgeInsets.symmetric(vertical: 8.0),
+                          child: ListTile(
+                            leading: Icon(course.icon, color: Theme.of(context).primaryColor),
+                            title: Text(course.name, style: const TextStyle(fontWeight: FontWeight.w500)),
+                            subtitle: Text('Instructor: ${course.instructor}'),
+                            trailing: const Icon(Icons.arrow_forward_ios_rounded, size: 16),
+                            onTap: () {
+                              // Action when a course item is tapped
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Tapped on ${course.name}')),
+                              );
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const Divider(height: 30, thickness: 1),
+                ],
+              ),
+
+
+            // d. Animated Action Button
+            const Text(
+              'Actions:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            Center(
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _isButtonScaled = !_isButtonScaled;
+                  });
+                  // You can add a delayed reset for the animation if desired
+                  Future.delayed(const Duration(milliseconds: 300), () {
+                    if (mounted) { // Check if the widget is still in the tree
+                      setState(() {
+                        _isButtonScaled = false;
+                      });
+                    }
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Enrollment action triggered!')),
+                  );
+                },
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeInOut,
+                  width: _isButtonScaled ? 220.0 : 200.0,
+                  height: _isButtonScaled ? 65.0 : 55.0,
+                  decoration: BoxDecoration(
+                    color: _isButtonScaled ? Colors.orangeAccent : Colors.orange,
+                    borderRadius: BorderRadius.circular(_isButtonScaled ? 30.0 : 15.0),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black,
+                        spreadRadius: _isButtonScaled ? 3 : 1,
+                        blurRadius: _isButtonScaled ? 6 : 3,
+                        offset: Offset(0, _isButtonScaled ? 4 : 2),
+                      )
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      'Enroll in a Course',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: _isButtonScaled ? 18 : 16,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const Divider(height: 30, thickness: 1),
+
+            // e. Course Selection Dropdown
+            const Text(
+              'Select Course Category:',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 4.0),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade400, width: 1.0),
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              child: DropdownButtonHideUnderline(
+                child: DropdownButton<String>(
+                  isExpanded: true,
+                  hint: const Text('Select a category'),
+                  value: _selectedCategory,
+                  icon: const Icon(Icons.arrow_drop_down_circle_outlined),
+                  elevation: 16,
+                  style: TextStyle(color: Theme.of(context).primaryColorDark, fontSize: 16),
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      _selectedCategory = newValue;
+                    });
+                  },
+                  items: _courseCategories.map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
+                      value: value,
+                      child: Text(value),
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+            if (_selectedCategory != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 12.0),
+                child: Text(
+                  'Selected Category: $_selectedCategory',
+                  style: const TextStyle(fontSize: 16, color: Colors.teal, fontWeight: FontWeight.w500),
+                ),
+              ),
+            const SizedBox(height: 20), // Extra space at the bottom
+          ],
+        ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.school),
+            label: 'Courses',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.amber[800],
+        onTap: _onItemTapped,
+      ),
+    );
+  }
+}
+
+// Data class for a Course
+class Course {
+  final String name;
+  final String instructor;
+  final IconData icon;
+
+  Course({required this.name, required this.instructor, required this.icon});
+}
+
+// Placeholder content for the Home tab (can be expanded)
+class HomeScreenContent extends StatelessWidget {
+  const HomeScreenContent({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    // The actual course list is built in the MainScreen's body when _selectedIndex is 0.
+    // This widget can contain other Home-specific content if needed.
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          // Text('Welcome to the Home Page!', style: TextStyle(fontSize: 22)),
+          // SizedBox(height: 10),
+          // Text('Course list is displayed below.'),
+        ],
+      ),
+    );
+  }
+}
