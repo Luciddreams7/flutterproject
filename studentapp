@@ -1,0 +1,186 @@
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const StudentInfoApp());
+}
+
+class StudentInfoApp extends StatelessWidget {
+  const StudentInfoApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      title: 'Student Info Manager',
+      home: WelcomeDashboard(),
+    );
+  }
+}
+
+class WelcomeDashboard extends StatefulWidget {
+  const WelcomeDashboard({super.key});
+
+  @override
+  State<WelcomeDashboard> createState() => _WelcomeDashboardState();
+}
+
+class _WelcomeDashboardState extends State<WelcomeDashboard> {
+  int _studentCount = 0;
+  final _formKey = GlobalKey<FormState>();
+  final _emailCtrl = TextEditingController();
+  final _passwordCtrl = TextEditingController();
+
+  void _updateCount(bool add) {
+    setState(() {
+      if (add) {
+        _studentCount++;
+      } else if (_studentCount > 0) {
+        _studentCount--;
+      }
+    });
+  }
+
+  void _showAlert(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+    );
+  }
+
+  void _login() {
+    if (_formKey.currentState!.validate()) {
+      _showAlert('Login Successful!');
+    }
+  }
+
+  @override
+  void dispose() {
+    _emailCtrl.dispose();
+    _passwordCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Student Info Manager')),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            // Welcome Card
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: const [
+                    Text('[Your Name]',
+                        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
+                    SizedBox(height: 8),
+                    Text('[Your Course]'),
+                    Text('[Your University]'),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            ElevatedButton(
+              onPressed: () => _showAlert('Hello! Welcome to Student Info Manager.'),
+              child: const Text('Show Alert'),
+            ),
+            const SizedBox(height: 20),
+
+            // Student Counter
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    const Text('Enrolled Students:',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text('$_studentCount',
+                        style: const TextStyle(fontSize: 40, color: Colors.blue)),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        IconButton(
+                          onPressed: () => _updateCount(true),
+                          icon: const Icon(Icons.add, color: Colors.green, size: 30),
+                        ),
+                        IconButton(
+                          onPressed: () => _updateCount(false),
+                          icon: const Icon(Icons.remove, color: Colors.red, size: 30),
+                        ),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Login Form
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      const Text('Student Login',
+                          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                      const SizedBox(height: 15),
+                      TextFormField(
+                        controller: _emailCtrl,
+                        decoration: const InputDecoration(
+                          labelText: 'Email',
+                          prefixIcon: Icon(Icons.email),
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (v) =>
+                            v == null || !v.contains('@') ? 'Enter valid email' : null,
+                      ),
+                      const SizedBox(height: 10),
+                      TextFormField(
+                        controller: _passwordCtrl,
+                        obscureText: true,
+                        decoration: const InputDecoration(
+                          labelText: 'Password',
+                          prefixIcon: Icon(Icons.lock),
+                          border: OutlineInputBorder(),
+                        ),
+                        validator: (v) =>
+                            v == null || v.length < 6 ? 'Min 6 characters' : null,
+                      ),
+                      const SizedBox(height: 15),
+                      ElevatedButton(onPressed: _login, child: const Text('Login')),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Profile Picture
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    const Text('Profile Picture',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 10),
+                    CircleAvatar(
+                      radius: 60,
+                      backgroundImage: NetworkImage('https://via.placeholder.com/150'),
+                      backgroundColor: Colors.grey.shade200,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
